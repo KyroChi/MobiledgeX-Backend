@@ -1,4 +1,3 @@
-from facial_detection.meta import logging
 import cv2 as cv
 import os
 
