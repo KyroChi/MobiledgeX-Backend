@@ -47,14 +47,9 @@ class FaceDetector(object):
         face.
         """
         rows, cols = frame.shape[:2]
-
-        scale = min(self.resize_width, cols) / float(cols)
-        resized_frame_size = int(scale * cols), \
-                             int(scale * rows)
-        resized_frame = cv.resize(frame, resized_frame_size)
         
         self.all_faces = self.face_cascade.detectMultiScale(
-            resized_frame, 0.9, 3, 0,
+            frame, 1.1, 3, 0,
             (int(rows / 5), int(rows / 5)),
             (int(rows * 2 / 3), int(rows * 2 / 3)))
 
@@ -77,10 +72,11 @@ if __name__ == "__main__":
     while True:
         _, frame = capture.read()
         rects = fd.detect_faces(frame)
+        print(rects)
             
         for x1, y1, x2, y2 in rects:
             cv.rectangle(
-                frame, (x1, y1), (x2, y2), (0, 255, 0), 2
+               frame, (x1, y1), (x2, y2), (0, 255, 0), 2
             )
 
         cv.imshow('frame', frame)
