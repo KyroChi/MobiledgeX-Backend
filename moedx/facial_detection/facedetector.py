@@ -43,15 +43,15 @@ class FaceDetector(object):
 
     def detect_faces(self, frame):
         """ 
-        Return a face object that represents a detected 
-        face.
+        Return a face object that represents a detected face.
         """
         rows, cols = frame.shape[:2]
+        print(frame)
         
         self.all_faces = self.face_cascade.detectMultiScale(
-            frame, 1.1, 3, 0,
-            (int(rows / 5), int(rows / 5)),
-            (int(rows * 2 / 3), int(rows * 2 / 3)))
+            frame, scaleFactor=1.1, minNeighbors=3, flags=0,
+            minSize=(int(rows / 5), int(rows / 5)),
+            maxSize=(int(rows * 2 / 3), int(rows * 2 / 3)))
 
         if len(self.all_faces) == 0:
             return []
@@ -67,10 +67,16 @@ if __name__ == "__main__":
     camera. This gives a good example of the proof of concept
     and shows off how the application should work.
     """
+    import json
+    
     fd = FaceDetector()
     capture = cv.VideoCapture(0)
     while True:
-        _, frame = capture.read()
+        _, fram = capture.read()
+        
+        data = { 'file': json.dumps(frame.tolist()) }
+        frame = json.loads(data['file'])
+        
         rects = fd.detect_faces(frame)
         print(rects)
             
