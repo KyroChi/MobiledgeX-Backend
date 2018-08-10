@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
 import os
 
 class FaceDetector(object):
@@ -72,10 +73,11 @@ if __name__ == "__main__":
     fd = FaceDetector()
     capture = cv.VideoCapture(0)
     while True:
-        _, fram = capture.read()
-        
+        _, frame = capture.read()
+ 
         data = { 'file': json.dumps(frame.tolist()) }
         frame = json.loads(data['file'])
+        frame = np.array(frame)
         
         rects = fd.detect_faces(frame)
         print(rects)
@@ -92,6 +94,6 @@ if __name__ == "__main__":
     capture.release()
     cv.destroyAllWindows()
     
-    
+          
         
 
