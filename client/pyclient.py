@@ -2,6 +2,7 @@
 Simple Http client that sends an image to the facial detection
 server and displays the result.
 """
+import json
 import requests
 import cv2
 
@@ -16,10 +17,9 @@ class RequestClient(object):
 
     def send_image(self, image):
         """ """
-        _, frame = cv2.imencode('.png', image)
-        # print(list(frame))
-        data = { 'frame': frame.tolist() }
-        return requests.get(
+        data = image.tolist()
+        data = { 'file': json.dumps(data) }
+        return requests.post(
             self.BASE_URL + self.API_ENDPOINT, json=data)
 
     
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         exit()
 
     try:
-        image = cv2.imread(sys.argv[1], 0)
+        image = cv2.imread(sys.argv[1])
     except e:
         print(e)
         exit()

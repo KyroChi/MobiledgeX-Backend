@@ -47,7 +47,6 @@ class FaceDetector(object):
         Return a face object that represents a detected face.
         """
         rows, cols = frame.shape[:2]
-        print(frame)
         
         self.all_faces = self.face_cascade.detectMultiScale(
             frame, scaleFactor=1.1, minNeighbors=3, flags=0,
@@ -93,7 +92,3 @@ if __name__ == "__main__":
 
     capture.release()
     cv.destroyAllWindows()
-    
-          
-        
-

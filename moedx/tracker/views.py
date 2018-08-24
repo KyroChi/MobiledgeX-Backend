@@ -5,6 +5,7 @@ from tracker.serializers import DetectedSerializer
 from facial_detection.facedetector import FaceDetector
 from django.http import HttpResponse
 
+import ast
 import cv2
 import numpy as np
 import json
@@ -17,9 +18,11 @@ def frame_detect(request):
     Runs facial detection on a frame that is sent via a REST
     API call
     """
-    # print(fd.detect_faces(cv2.imdecode(request.body, 1)))
-    image = np.array(
-        json.loads(request.body.decode('utf-8'))['frame'])
-    image = cv2.imdecode(image, 1)
-    detect = fd.detect_faces(image)
-    return HttpResponse(detect)
+    if request.method == 'POST':
+        image = json.loads(request.body)['file']
+        image = ast.literal_eval(image)
+        image = np.array(image).astype(np.uint8)
+        rects = fd.detect_faces(image)
+        return HttpResponse(rects)
+    
+    return HttpResponse("Must send frame as a POST")
