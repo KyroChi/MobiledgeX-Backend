@@ -15,9 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from tracker.views import frame_detect
+from tracker.views import frame_detect, test_connection
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('detect/', frame_detect),
+    path('test/', test_connection),
 ]
