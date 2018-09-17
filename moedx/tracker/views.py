@@ -16,6 +16,9 @@ import time
 import os
 import glob
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 fd = FaceDetector()
 
@@ -50,7 +53,7 @@ def frame_detect(request):
         image = imread(io.BytesIO(image))
         rects = fd.detect_faces(image)
 
-        print("rects", rects)
+        logger.info(prepend_ip("rects %s" %rects, request))
 
         # Create a byte object to be returned in a consistent manner
         # TODO: This method only handles numbers up to 4095, so if the screen
@@ -65,31 +68,39 @@ def frame_detect(request):
 
     return HttpResponse("Must send frame as a POST")
 
+def prepend_ip(text, request):
+    return "[%s] %s" %(request.META.get('REMOTE_ADDR'), text)
+
 @csrf_exempt
 def frame_detect_json(request):
     """
     Runs facial detection on a frame that is sent via a REST
-    API call
+    API call and returns a JSON formatted set of coordinates.
     """
     if request.method == 'POST':
+        logger.debug(prepend_ip("Request received", request))
         image = base64.b64decode(request.body)
 
+        logger.debug(prepend_ip("Saving image for debugging", request))
         #Save current image with timestamp
         timestr = time.strftime("%Y%m%d-%H%M%S")
         fileName = "/tmp/face_"+timestr+".png"
         with open(fileName, "wb") as fh:
             fh.write(image)
         #Delete all old files except the 20 most recent
+        logger.debug(prepend_ip("Deleting all but 20 newest images", request))
         files = sorted(glob.glob("/tmp/face_*.png"), key=os.path.getctime, reverse=True)
         #print(files[20:])
         for file in files[20:]:
             #print("removing %s" %file)
             os.remove(file)
 
+        logger.debug(prepend_ip("Performing detection process", request))
+        now = time.time()
         image = imread(io.BytesIO(image))
         rects = fd.detect_faces(image)
-
-        print("rects", rects)
+        elapsed = "%.3f" %((time.time() - now)*1000)
+        logger.info(prepend_ip("%s ms to detect rectangles: %s" %(elapsed, rects), request))
 
         # Create a JSON response to be returned in a consistent manner
         # TODO: Return an array of all rects instead of only the first. Multi-face!
