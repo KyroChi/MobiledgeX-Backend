@@ -112,3 +112,45 @@ def frame_detect_json(request):
         return HttpResponse(json_ret)
 
     return HttpResponse("Must send frame as a POST")
+
+@csrf_exempt
+def frame_detect_multi_json(request):
+    """
+    Runs facial detection on a frame that is sent via a REST
+    API call and returns a JSON formatted set of coordinates.
+    """
+    if request.method == 'POST':
+        logger.debug(prepend_ip("Request received", request))
+        image = base64.b64decode(request.body)
+
+        logger.debug(prepend_ip("Saving image for debugging", request))
+        #Save current image with timestamp
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        fileName = "/tmp/face_"+timestr+".png"
+        with open(fileName, "wb") as fh:
+            fh.write(image)
+        #Delete all old files except the 20 most recent
+        logger.debug(prepend_ip("Deleting all but 20 newest images", request))
+        files = sorted(glob.glob("/tmp/face_*.png"), key=os.path.getctime, reverse=True)
+        #print(files[20:])
+        for file in files[20:]:
+            #print("removing %s" %file)
+            os.remove(file)
+
+        logger.debug(prepend_ip("Performing detection process", request))
+        now = time.time()
+        image = imread(io.BytesIO(image))
+        rects = fd.detect_faces(image)
+        elapsed = "%.3f" %((time.time() - now)*1000)
+
+        # Create a JSON response to be returned in a consistent manner
+        if len(rects) == 0:
+            ret = [[0, 0, 0, 0]]
+        else:
+            ret = rects.tolist()
+        logger.info(prepend_ip("%s ms to detect rectangles: %s" %(elapsed, ret), request))
+        json_ret = json.dumps(ret)
+
+        return HttpResponse(json_ret)
+
+    return HttpResponse("Must send frame as a POST")
